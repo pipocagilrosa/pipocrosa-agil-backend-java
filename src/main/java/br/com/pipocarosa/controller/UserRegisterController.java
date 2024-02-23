@@ -29,8 +29,8 @@ public class UserRegisterController {
 
     @PostMapping("/users")
     public ResponseEntity<String> testUser(@RequestBody @Valid UserRecordDto userRecordDto) {
-        userRegisterService.validateUser(userRecordDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Valid user");
+            userRegisterService.validateUser(userRecordDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Valid user");
     }
 
 //    @PostMapping("/users")

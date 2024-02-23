@@ -15,21 +15,23 @@ import java.util.List;
 public class UserRegisterService {
     //    @Autowired
 //    private UserRepository userRepository;
+
+    String errorMessage = "Error in Business Rules";
     private final List<UserRecordDto> usersList = new ArrayList<UserRecordDto>();
 
     public void validateUser(UserRecordDto userRecordDto) {
         for (UserRecordDto user : usersList) {
             if (user.email().equals(userRecordDto.email())) {
-                throw new ExistingEmailException("Email already exists");
+                throw new ExistingEmailException(errorMessage);
             }
         }
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDate birthDate = LocalDate.parse(userRecordDto.birthDate(), formatter);
         LocalDate currentDate = LocalDate.now();
         Period interval = Period.between(birthDate, currentDate);
-
         if (interval.toTotalMonths() < 18 * 12) {
-            throw new YoungUserException("Underage user");
+            throw new YoungUserException(errorMessage);
         }
         usersList.add(userRecordDto);
         System.out.println(usersList);

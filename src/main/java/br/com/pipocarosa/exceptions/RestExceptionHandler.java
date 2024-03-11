@@ -1,5 +1,6 @@
 package br.com.pipocarosa.exceptions;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,26 +20,26 @@ public class RestExceptionHandler {
         return new ResponseEntity<>(apiError, apiError.getStatus());
     }
     @ExceptionHandler(ExistingEmailException.class)
-    public final ResponseEntity<Object> handleExistingEmail(ExistingEmailException ex) {
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, ex.getMessage());
+    public final ResponseEntity<Object> handleExistingEmail(ExistingEmailException ex, HttpServletRequest request) {
+        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
         return buildResponseEntity(apiError);
     }
 
     @ExceptionHandler(YoungUserException.class)
-    public final ResponseEntity<Object> handleYoungerEmail(YoungUserException ex) {
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, ex.getMessage());
+    public final ResponseEntity<Object> handleYoungerEmail(YoungUserException ex, HttpServletRequest request) {
+        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
         return buildResponseEntity(apiError);
     }
 
     @ExceptionHandler(Exception.class)
-    public final ResponseEntity<Object> handleGenericException(Exception ex, WebRequest request) {
-        ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    public final ResponseEntity<Object> handleGenericException(Exception ex, HttpServletRequest request) {
+        ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request.getRequestURI());
         return buildResponseEntity(apiError);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, "Invalid data format");
+    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, "Invalid data format", request.getRequestURI());
         return buildResponseEntity(apiError);
     }
 

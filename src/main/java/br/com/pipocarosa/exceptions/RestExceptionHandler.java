@@ -31,11 +31,11 @@ public class RestExceptionHandler {
         return buildResponseEntity(apiError);
     }
 
-    @ExceptionHandler(Exception.class)
-    public final ResponseEntity<Object> handleGenericException(Exception ex, HttpServletRequest request) {
-        ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request.getRequestURI());
-        return buildResponseEntity(apiError);
-    }
+//    @ExceptionHandler(Exception.class)
+//    public final ResponseEntity<Object> handleGenericException(Exception ex, HttpServletRequest request) {
+//        ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request.getRequestURI());
+//        return buildResponseEntity(apiError);
+//    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {

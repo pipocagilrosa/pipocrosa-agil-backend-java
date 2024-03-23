@@ -12,6 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @AllArgsConstructor
 public class UserRegisterController {
@@ -19,23 +22,26 @@ public class UserRegisterController {
     @Autowired
     private final UserRegisterService userRegisterService;
 
-//    @Autowired
-//    private final UserRepository userRepository;
+    @Autowired
+    private final UserRepository userRepository;
 
     @GetMapping("/users")
-    public ResponseEntity<String> executeCall() {
-        return ResponseEntity.status(HttpStatus.OK).body("Hello world");
+    public ResponseEntity<List<UserRecordDto>> getAllUsers() {
+        List<UserModel> users = userRepository.findAll();
+        List<UserRecordDto> usersDto = users.stream()
+                .map(user -> new UserRecordDto(
+                        user.getName(),
+                        user.getEmail(),
+                        user.getBirthDate(),
+                        user.getPassword())
+                )
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(usersDto);
     }
 
     @PostMapping("/users")
-    public ResponseEntity<String> testUser(@RequestBody @Valid UserRecordDto userRecordDto) {
-            userRegisterService.validateUser(userRecordDto);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Valid user");
+    public ResponseEntity<String> saveUser(@RequestBody @Valid UserRecordDto userRecordDto) {
+        userRegisterService.validateUser(userRecordDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Registered user");
     }
-
-//    @PostMapping("/users")
-//    public ResponseEntity<String> saveUser(@RequestBody @Valid UserRecordDto userRecordDto) {
-//        userRegisterService.validateUser(userRecordDto);
-//        return ResponseEntity.status(HttpStatus.CREATED);
-//    }
 }

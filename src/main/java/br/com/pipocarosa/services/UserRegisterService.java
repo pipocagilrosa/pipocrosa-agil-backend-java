@@ -14,30 +14,46 @@ import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserRegisterService {
-        @Autowired
-        private UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     String errorMessage = "Error in Business Rules";
+
+    public boolean checkAge(String date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate birthDate = LocalDate.parse(date, formatter);
+        LocalDate currentDate = LocalDate.now();
+        Period interval = Period.between(birthDate, currentDate);
+        if(interval.getYears() > 18) {
+            return true;
+        } else if(interval.getYears() == 18) {
+            if(interval.getMonths() > 0) {
+                return true;
+            } else if(interval.getMonths() == 0) {
+                return interval.getDays() >= 0;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
 
     public void validateUser(UserRecordDto userRecordDto) {
         if (userRepository.existsByEmail(userRecordDto.email())) {
             throw new ExistingEmailException(errorMessage);
         }
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        LocalDate birthDate = LocalDate.parse(userRecordDto.birthDate(), formatter);
-        LocalDate currentDate = LocalDate.now();
-        Period interval = Period.between(birthDate, currentDate);
-        if (interval.toTotalMonths() < 18 * 12) {
+        if (!checkAge(userRecordDto.birthDate())) {
             throw new YoungUserException(errorMessage);
         }
         var userModel = new UserModel();
         BeanUtils.copyProperties(userRecordDto, userModel);
         userRepository.save(userModel);
     }
-
 
 }

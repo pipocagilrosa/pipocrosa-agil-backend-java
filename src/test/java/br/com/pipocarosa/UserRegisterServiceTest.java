@@ -3,6 +3,8 @@ package br.com.pipocarosa;
 import br.com.pipocarosa.dtos.UserRecordDto;
 import br.com.pipocarosa.exceptions.ExistingEmailException;
 import br.com.pipocarosa.models.UserModel;
+
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import br.com.pipocarosa.repositories.UserRepository;
 import br.com.pipocarosa.services.UserRegisterService;
@@ -23,6 +25,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -64,7 +67,7 @@ public class UserRegisterServiceTest {
     }
 
     @Test
-    void shouldVerifyIfUserIsNotUnderage() {
+    void shouldVerifyIfUserIsNotUnderageWithSuccess() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDate currentDate = LocalDate.now();
         LocalDate eighteenYearsAgoAndOneDayLaterDate = currentDate.minusYears(18).plusDays(1);
@@ -89,6 +92,19 @@ public class UserRegisterServiceTest {
         boolean existingEmail = userRepository.existsByEmail("junior@gmail.com");
         boolean notExistingEmail = userRepository.existsByEmail("junior1@gmail.com");
         assertTrue(existingEmail);
+        assertFalse(notExistingEmail);
+    }
+
+    @Test
+    void shouldVerifyIfEmailNotExists(){
+        userRepository.save(new UserModel(
+                1L,
+                "Junior Souza",
+                "junior@gmail.com",
+                "17/08/2001",
+                "123456")
+        );
+        boolean notExistingEmail = userRepository.existsByEmail("junior1@gmail.com");
         assertFalse(notExistingEmail);
     }
 
@@ -121,16 +137,94 @@ public class UserRegisterServiceTest {
                 .body(".", hasSize(2));
     }
 
-//    @Test
-//    void shouldVerifyIfExceptionIsTypeExistingEmail() {
-//        assertThrows(ExistingEmailException.class, () -> {
-//            userRepository.save(new UserModel(
-//                    2L,
-//                    "Junior Silva",
-//                    "junior@gmail.com",
-//                    "17/08/2001",
-//                    "123456")
-//            );
-//        });
-//    }
+    @Test
+    void shouldPostAUser() {
+        String requestBody =
+                "{\n" +
+                "\t\"name\": \"Pedro\",\n" +
+                "\t\"email\": \"pedro@gmail.com\",\n" +
+                "\t\"birthDate\": \"09/02/2002\",\n" +
+                "\t\"password\": \"345868\"\n" +
+                "}";
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .and()
+                .body(requestBody)
+                .when()
+                .post("/users")
+                .then()
+                .statusCode(201)
+                .body(equalTo("Registered user"));
+    }
+
+    @Test
+    void shouldFailPostDuoToAge() {
+        String requestBody =
+                "{\n" +
+                        "\t\"name\": \"Pedro\",\n" +
+                        "\t\"email\": \"pedro@gmail.com\",\n" +
+                        "\t\"birthDate\": \"09/02/2007\",\n" +
+                        "\t\"password\": \"345868\"\n" +
+                        "}";
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .and()
+                .body(requestBody)
+                .when()
+                .post("/users")
+                .then()
+                .statusCode(400)
+                .body("message", equalTo("Error in Business Rules"));
+    }
+
+    @Test
+    void shouldFailPostDuoToEmailAlreadyExists() {
+        userRepository.save(new UserModel(
+                1L,
+                "Junior Souza",
+                "junior@gmail.com",
+                "17/08/2001",
+                "123456")
+        );
+        String requestBody =
+                "{\n" +
+                        "\t\"name\": \"Junior Souza\",\n" +
+                        "\t\"email\": \"junior@gmail.com\",\n" +
+                        "\t\"birthDate\": \"17/08/2001\",\n" +
+                        "\t\"password\": \"123456\"\n" +
+                        "}";
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .and()
+                .body(requestBody)
+                .when()
+                .post("/users")
+                .then()
+                .statusCode(400)
+                .body("message", equalTo("Error in Business Rules"));
+    }
+
+    @Test
+    void shouldFailPostDuoToInvalidDataFormat() {
+        String requestBody =
+                "{\n" +
+                        "\t\"name\": \"\",\n" +
+                        "\t\"email\": \"junior@gmail.com\",\n" +
+                        "\t\"birthDate\": \"17/08/2001\",\n" +
+                        "\t\"password\": \"123456\"\n" +
+                        "}";
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .and()
+                .body(requestBody)
+                .when()
+                .post("/users")
+                .then()
+                .statusCode(400)
+                .body("message", equalTo("Invalid data format"));
+    }
 }

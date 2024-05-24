@@ -1,5 +1,7 @@
 package br.com.pipocarosa.controller;
 
+import br.com.pipocarosa.authentication.AuthenticationResponse;
+import br.com.pipocarosa.authentication.AuthenticationService;
 import br.com.pipocarosa.dtos.UserRecordDto;
 import br.com.pipocarosa.models.UserModel;
 import br.com.pipocarosa.repositories.UserRepository;
@@ -25,6 +27,9 @@ public class UserRegisterController {
     @Autowired
     private final UserRepository userRepository;
 
+    @Autowired
+    private AuthenticationService authenticationService;
+
     @GetMapping("/users")
     public ResponseEntity<List<UserRecordDto>> getAllUsers() {
         List<UserModel> users = userRepository.findAll();
@@ -39,9 +44,9 @@ public class UserRegisterController {
         return ResponseEntity.ok().body(usersDto);
     }
 
-    @PostMapping("/users")
-    public ResponseEntity<String> saveUser(@RequestBody @Valid UserRecordDto userRecordDto) {
+    @PostMapping("/user")
+    public ResponseEntity<AuthenticationResponse> saveUser(@RequestBody @Valid UserRecordDto userRecordDto) {
         userRegisterService.validateUser(userRecordDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Registered user");
+        return ResponseEntity.status(HttpStatus.CREATED).body(authenticationService.register(userRecordDto));
     }
 }

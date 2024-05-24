@@ -51,9 +51,6 @@ public class UserRegisterService {
         if (!checkAge(userRecordDto.birthDate())) {
             throw new YoungUserException(errorMessage);
         }
-        var userModel = new UserModel();
-        BeanUtils.copyProperties(userRecordDto, userModel);
-        userRepository.save(userModel);
     }
 
 }

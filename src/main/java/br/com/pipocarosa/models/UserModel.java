@@ -40,13 +40,12 @@ public class UserModel implements Serializable, UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    public UserModel(Long id, String name, String email, String birthDate, String password){
+    public UserModel(Long id, String name, String email, String birthDate){
         this.id = id;
         this.uuid = UUID.randomUUID();
         this.name = name;
         this.email = email;
         this.birthDate = birthDate;
-        this.password = password;
         this.role = Role.USER;
     }
 
@@ -114,7 +113,7 @@ public class UserModel implements Serializable, UserDetails {
 
     @Override
     public String getUsername() {
-        return null;
+        return email;
     }
 
     @Override

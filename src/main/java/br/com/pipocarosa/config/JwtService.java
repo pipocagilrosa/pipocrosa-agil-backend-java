@@ -49,7 +49,7 @@ public class JwtService {
 
         // May generate an error
         // There's no a 'parserBuilder' method anymore for Jwts
-        return Jwts.parser().setSigningKey(generateKey()).build()
-                .parseClaimsJwt(jwt).getBody();
+        return Jwts.parserBuilder().setSigningKey(generateKey()).build()
+                .parseClaimsJws(jwt).getBody();
     }
 }

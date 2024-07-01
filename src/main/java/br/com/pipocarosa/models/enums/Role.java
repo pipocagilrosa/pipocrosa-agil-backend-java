@@ -5,7 +5,7 @@ import java.util.List;
 
 public enum Role {
 
-    USER(Arrays.asList(Permission.READ_PERSONAL_DATA)),
+    USER(List.of(Permission.READ_PERSONAL_DATA)),
 
     ADMIN(Arrays.asList(Permission.READ_ALL_DATA, Permission.READ_PERSONAL_DATA));
 

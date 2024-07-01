@@ -30,7 +30,6 @@ public class SecurityBeansInjector {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService());
         provider.setPasswordEncoder(passwordEncoder());
-
         return provider;
     }
 
@@ -41,9 +40,7 @@ public class SecurityBeansInjector {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return email -> {
-            return userRepository.findByEmail(email)
+        return email -> userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("Email not found"));
-        };
     }
 }

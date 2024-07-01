@@ -8,12 +8,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -35,7 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization"); // Bearer jwt
 
-        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
 
             filterChain.doFilter(request, response);
             return;
@@ -51,13 +53,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 4 - set authenticate object inside our security context
 
-        UserModel user = userRepository.findByEmail(email).get();
+        Optional<UserModel> optionalUser = userRepository.findByEmail(email);
+        UserModel user = null;
+        if (optionalUser.isPresent()) {
+            user = optionalUser.get();
+        }
+
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                email, "", user.getAuthorities()
+                email, null, user.getAuthorities()
         );
 
-        SecurityContextHolder.getContext().setAuthentication(authToken);
+        context.setAuthentication(authToken);
+
+        SecurityContextHolder.setContext(context);
 
         // 5 execute rest of the filters
 

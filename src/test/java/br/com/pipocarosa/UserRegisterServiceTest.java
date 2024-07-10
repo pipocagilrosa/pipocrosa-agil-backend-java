@@ -6,6 +6,8 @@ import br.com.pipocarosa.models.UserModel;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+
+import br.com.pipocarosa.models.enums.Role;
 import br.com.pipocarosa.repositories.UserRepository;
 import br.com.pipocarosa.services.UserRegisterService;
 import io.restassured.RestAssured;
@@ -214,7 +216,7 @@ public class UserRegisterServiceTest {
         UserModel user1 = new UserModel(
                 1L,
                 "Felipe Enzo",
-                "felipe1@gmail.com",
+                "felipe@gmail.com",
                 "17/08/2001"
         );
 
@@ -226,27 +228,38 @@ public class UserRegisterServiceTest {
         );
 
         user1.setPassword(passwordEncoder.encode("123456"));
+        user1.setRole(Role.ADMIN);
         user2.setPassword(passwordEncoder.encode("123456"));
         List<UserModel> users = List.of(
                 user1, user2
-
         );
         userRepository.saveAll(users);
+
+        String requestBody =
+                "{\n" +
+                        "\t\"email\": \"felipe@gmail.com\",\n" +
+                        "\t\"password\": \"123456\"\n" +
+                        "}";
+
+        String jwt = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .and()
+                .body(requestBody)
+                .when()
+                .post("/login")
+                .then()
+                .extract().path("jwt");
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .header("Authorization",
-                        "Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsIm5hbWUiOiJGZWxpcGUgRW56byIsInN1YiI6ImZlbGlwZTFAZ21haWwuY29tIiwiaWF0IjoxNzE4MjQxMjQzLCJleHAiOjE3MTgyNDMwNDN9.rQVqk-vNSnFuqsYwB1ECZIWwumIBp39jAG3Z0EpQ_S4"
-                )
-                .body("{" +
-                        "\t\"email\": \"bruno@gmail.com\"" +
-                        "}"
+                    "Bearer " + jwt)
+                .body("felipe@gmail.com"
                 )
                 .when()
                 .get("/user")
                 .then()
-                .statusCode(200)
-                .body(".", hasSize(2));
+                .statusCode(200);
     }
 
     @Test

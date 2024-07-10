@@ -1,8 +1,7 @@
 package br.com.pipocarosa.services;
 
 import br.com.pipocarosa.dtos.UserRecordDto;
-import br.com.pipocarosa.exceptions.ExistingEmailException;
-import br.com.pipocarosa.exceptions.YoungUserException;
+import br.com.pipocarosa.exceptions.BusinessRulesException;
 import br.com.pipocarosa.models.UserModel;
 import br.com.pipocarosa.repositories.UserRepository;
 import org.springframework.beans.BeanUtils;
@@ -20,8 +19,6 @@ import java.util.Optional;
 public class UserRegisterService {
     @Autowired
     private UserRepository userRepository;
-
-    String errorMessage = "Error in Business Rules";
 
     public boolean checkAge(String date) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -45,12 +42,11 @@ public class UserRegisterService {
 
     public void validateUser(UserRecordDto userRecordDto) {
         if (userRepository.existsByEmail(userRecordDto.email())) {
-            throw new ExistingEmailException(errorMessage);
+            throw new BusinessRulesException();
         }
 
         if (!checkAge(userRecordDto.birthDate())) {
-            throw new YoungUserException(errorMessage);
+            throw new BusinessRulesException();
         }
     }
-
 }

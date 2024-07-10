@@ -19,23 +19,12 @@ public class RestExceptionHandler {
     private ResponseEntity<Object> buildResponseEntity(ApiError apiError) {
         return new ResponseEntity<>(apiError, apiError.getStatus());
     }
-    @ExceptionHandler(ExistingEmailException.class)
-    public final ResponseEntity<Object> handleExistingEmail(ExistingEmailException ex, HttpServletRequest request) {
+
+    @ExceptionHandler(BusinessRulesException.class)
+    public final ResponseEntity<Object> handleYoungerEmail(BusinessRulesException ex, HttpServletRequest request) {
         ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
         return buildResponseEntity(apiError);
     }
-
-    @ExceptionHandler(YoungUserException.class)
-    public final ResponseEntity<Object> handleYoungerEmail(YoungUserException ex, HttpServletRequest request) {
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
-        return buildResponseEntity(apiError);
-    }
-
-//    @ExceptionHandler(Exception.class)
-//    public final ResponseEntity<Object> handleGenericException(Exception ex, HttpServletRequest request) {
-//        ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request.getRequestURI());
-//        return buildResponseEntity(apiError);
-//    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {

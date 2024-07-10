@@ -1,7 +1,5 @@
 package br.com.pipocarosa;
 
-import br.com.pipocarosa.dtos.UserRecordDto;
-import br.com.pipocarosa.exceptions.ExistingEmailException;
 import br.com.pipocarosa.models.UserModel;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -27,8 +25,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -204,11 +200,56 @@ public class UserRegisterServiceTest {
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + jwt)
-                .body("felipe@gmail.com")
+                .body("{\n" +
+                         "\t\"email\": \"felipe@gmail.com\"\n" +
+                         "}")
                 .when()
                 .get("/user")
                 .then()
                 .statusCode(200);
+    }
+
+    @Test
+    void shouldFailGetOneUserDueToBadRequest() {
+
+        UserModel user = new UserModel(
+                1L,
+                "Felipe Enzo",
+                "felipe@gmail.com",
+                "17/08/2001"
+        );
+
+        user.setPassword(passwordEncoder.encode("123456"));
+        userRepository.save(user);
+
+        String requestBody =
+                "{\n" +
+                        "\t\"email\": \"felipe@gmail.com\",\n" +
+                        "\t\"password\": \"123456\"\n" +
+                        "}";
+
+        String jwt = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .and()
+                .body(requestBody)
+                .when()
+                .post("/login")
+                .then()
+                .extract().path("jwt");
+
+        String errorMessage = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + jwt)
+                .body("{\n" +
+                        "\t\"email\": \"felipe1@gmail.com\"\n" +
+                        "}")
+                .when()
+                .get("/user")
+                .then()
+                .statusCode(400)
+                .extract().path("message");
+
+        System.out.println(errorMessage);
     }
 
     @Test

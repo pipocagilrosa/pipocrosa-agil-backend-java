@@ -3,9 +3,12 @@ package br.com.pipocarosa.controller;
 import br.com.pipocarosa.authentication.AuthenticationRequest;
 import br.com.pipocarosa.authentication.AuthenticationResponse;
 import br.com.pipocarosa.authentication.AuthenticationService;
+import br.com.pipocarosa.dtos.UserIdentifierDto;
 import br.com.pipocarosa.dtos.UserRecordDto;
+import br.com.pipocarosa.exceptions.BusinessRulesException;
 import br.com.pipocarosa.models.UserModel;
 import br.com.pipocarosa.repositories.UserRepository;
+import br.com.pipocarosa.services.UserQueryService;
 import br.com.pipocarosa.services.UserRegisterService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -25,6 +28,9 @@ public class UserRegisterController {
 
     @Autowired
     private final UserRegisterService userRegisterService;
+
+    @Autowired
+    private final UserQueryService userQueryService;
 
     @Autowired
     private final UserRepository userRepository;
@@ -47,18 +53,8 @@ public class UserRegisterController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<UserRecordDto> getUser(@RequestBody String email) {
-
-        Optional<UserModel> optionalUser = userRepository.findByEmail(email);
-        UserModel user = optionalUser.get();
-
-        //Throw NullPointerException
-        UserRecordDto userDto = new UserRecordDto(
-                user.getName(),
-                user.getEmail(),
-                user.getBirthDate(),
-                user.getPassword()
-        );
+    public ResponseEntity<UserRecordDto> getUser(@RequestBody UserIdentifierDto userIdentifierDto) {
+        UserRecordDto userDto = userQueryService.getOneUser(userIdentifierDto.email());
         return ResponseEntity.ok().body(userDto);
     }
 

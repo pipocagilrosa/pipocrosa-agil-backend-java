@@ -47,8 +47,6 @@ public class JwtService {
 
     private Claims extractAllClaims(String jwt) {
 
-        // May generate an error
-        // There's no a 'parserBuilder' method anymore for Jwts
         return Jwts.parserBuilder().setSigningKey(generateKey()).build()
                 .parseClaimsJws(jwt).getBody();
     }

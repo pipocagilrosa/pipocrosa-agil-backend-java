@@ -38,7 +38,13 @@ public class SecurityFilter {
                             authConfig.requestMatchers("/error").permitAll();
                             authConfig.requestMatchers(HttpMethod.GET, "/users")
                                     .hasAuthority(Permission.READ_ALL_DATA.name());
-                            authConfig.requestMatchers(HttpMethod.GET, "/user")
+                            authConfig.requestMatchers(HttpMethod.GET, "/user/**")
+                                    .hasAuthority(Permission.READ_PERSONAL_DATA.name());
+                            authConfig.requestMatchers(HttpMethod.DELETE, "/user/**")
+                                    .hasAuthority(Permission.READ_PERSONAL_DATA.name());
+                            authConfig.requestMatchers(HttpMethod.PUT, "/user/**")
+                                    .hasAuthority(Permission.READ_PERSONAL_DATA.name());
+                            authConfig.requestMatchers(HttpMethod.PUT, "password/**")
                                     .hasAuthority(Permission.READ_PERSONAL_DATA.name());
                             authConfig.anyRequest().denyAll();
                         }

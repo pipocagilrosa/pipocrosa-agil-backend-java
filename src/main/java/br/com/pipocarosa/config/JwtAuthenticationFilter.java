@@ -1,5 +1,6 @@
 package br.com.pipocarosa.config;
 
+import br.com.pipocarosa.exceptions.InvalidTokenException;
 import br.com.pipocarosa.models.UserModel;
 import br.com.pipocarosa.repositories.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -33,44 +34,52 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // 1 - obtain a header that contains jwt
+//        try {
 
-        String authHeader = request.getHeader("Authorization"); // Bearer jwt
+            // 1 - obtain a header that contains jwt
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            String authHeader = request.getHeader("Authorization"); // Bearer jwt
+
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            // 2 - obtain jwt token
+
+            String jwt = authHeader.split(" ")[1];
+
+            // 3 - obtain subject/username in jwt
+
+            String email = jwtService.extractEmail(jwt);
+
+            // 4 - set authenticate object inside our security context
+
+            Optional<UserModel> optionalUser = userRepository.findByEmail(email);
+
+            if(optionalUser.isEmpty()) {
+                throw new InvalidTokenException();
+            }
+            UserModel user = optionalUser.get();
+
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    email, null, user.getAuthorities()
+            );
+
+            context.setAuthentication(authToken);
+
+            SecurityContextHolder.setContext(context);
+
+            // 5 execute rest of the filters
 
             filterChain.doFilter(request, response);
-            return;
-        }
 
-        // 2 - obtain jwt token
+//        } catch (Exception e) {
+//            System.out.println("Test: " + e.getMessage());
+//            e.printStackTrace();
+//        }
 
-        String jwt = authHeader.split(" ")[1];
-
-        // 3 - obtain subject/username in jwt
-
-        String email = jwtService.extractEmail(jwt);
-
-        // 4 - set authenticate object inside our security context
-
-        Optional<UserModel> optionalUser = userRepository.findByEmail(email);
-        UserModel user = null;
-        if (optionalUser.isPresent()) {
-            user = optionalUser.get();
-        }
-
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                email, null, user.getAuthorities()
-        );
-
-        context.setAuthentication(authToken);
-
-        SecurityContextHolder.setContext(context);
-
-        // 5 execute rest of the filters
-
-        filterChain.doFilter(request, response);
     }
 }

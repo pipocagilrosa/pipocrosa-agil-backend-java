@@ -1,13 +1,14 @@
 package br.com.pipocarosa.services;
 
 import br.com.pipocarosa.dtos.UserRecordDto;
-import br.com.pipocarosa.exceptions.BusinessRulesException;
+import br.com.pipocarosa.exceptions.UserNotFoundException;
 import br.com.pipocarosa.models.UserModel;
 import br.com.pipocarosa.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserQueryService {
@@ -15,9 +16,9 @@ public class UserQueryService {
     @Autowired
     private UserRepository userRepository;
 
-    public UserRecordDto getOneUser(String email) {
+    public UserRecordDto getOneUser(UUID uuid) {
 
-        Optional<UserModel> optionalUser = userRepository.findByEmail(email);
+        Optional<UserModel> optionalUser = userRepository.findByUuid(uuid);
 
         if(optionalUser.isPresent()) {
             UserModel user = optionalUser.get();
@@ -28,7 +29,15 @@ public class UserQueryService {
                     user.getPassword()
             );
         } else {
-            throw new BusinessRulesException();
+            throw new UserNotFoundException();
         }
+    }
+
+    public Optional<UserModel> findUserByUuid(UUID uuid) {
+        return userRepository.findByUuid(uuid);
+    }
+
+    public Optional<UserModel> findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 }

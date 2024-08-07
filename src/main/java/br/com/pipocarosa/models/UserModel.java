@@ -53,6 +53,10 @@ public class UserModel implements Serializable, UserDetails {
 
     }
 
+    public Long getId() {
+        return id;
+    }
+
     public UUID getUuid() {
         return uuid;
     }

@@ -9,7 +9,7 @@
 ################################################################################
 
 # Create a stage for resolving and downloading dependencies.
-FROM eclipse-temurin:17-jdk-jammy AS deps
+FROM eclipse-temurin:17-jdk-jammy as deps
 
 WORKDIR /build
 
@@ -31,7 +31,7 @@ RUN --mount=type=bind,source=pom.xml,target=pom.xml \
 # jar and instead relies on an application server like Apache Tomcat, you'll need to update this
 # stage with the correct filename of your package and update the base image of the "final" stage
 # use the relevant app server, e.g., using tomcat (https://hub.docker.com/_/tomcat/) as a base image.
-FROM deps AS package
+FROM deps as package
 
 WORKDIR /build
 
@@ -48,7 +48,7 @@ RUN --mount=type=bind,source=pom.xml,target=pom.xml \
 # the packaged application into separate layers that can be copied into the final stage.
 # See Spring's docs for reference:
 # https://docs.spring.io/spring-boot/docs/current/reference/html/container-images.html
-FROM package AS extract
+FROM package as extract
 
 WORKDIR /build
 
@@ -64,7 +64,7 @@ RUN java -Djarmode=layertools -jar target/app.jar extract --destination target/e
 # The example below uses eclipse-turmin's JRE image as the foundation for running the app.
 # By specifying the "17-jre-jammy" tag, it will also use whatever happens to be the
 # most recent version of that tag when you build your Dockerfile.
-# If reproducability is important, consider using a specific digest SHA, like
+# If reproducibility is important, consider using a specific digest SHA, like
 # eclipse-temurin@sha256:99cede493dfd88720b610eb8077c8688d3cca50003d76d1d539b0efc8cca72b4.
 FROM eclipse-temurin:17-jre-jammy AS final
 
@@ -89,4 +89,4 @@ COPY --from=extract build/target/extracted/application/ ./
 
 EXPOSE 8080
 
-ENTRYPOINT [ "java", "-Dspring.profiles.active=postgres", "org.springframework.boot.loader.launch.JarLauncher" ]
+ENTRYPOINT [ "java", "org.springframework.boot.loader.launch.JarLauncher" ]
